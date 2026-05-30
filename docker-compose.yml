@@ -1,0 +1,82 @@
+version: "3.8"
+
+services:
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - pedidos
+      - estoque
+      - pagamentos
+    networks:
+      - loja_net
+    restart: unless-stopped
+
+  pedidos:
+    build: ./services/pedidos
+    ports:
+      - "5001:5000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/loja_db
+    depends_on:
+      - postgres
+    networks:
+      - loja_net
+    restart: unless-stopped
+
+    db:
+  image: postgres:15-alpine
+  environment:
+    POSTGRES_USER: user
+    POSTGRES_PASSWORD: password
+    POSTGRES_DB: loja_veloz
+  networks:
+    - loja_net
+
+  networks:
+  loja_net:
+    driver: bridge
+
+  estoque:
+    build: ./services/estoque
+    ports:
+      - "5002:5000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/loja_db
+    depends_on:
+      - postgres
+    networks:
+      - loja_net
+    restart: unless-stopped
+
+  pagamentos:
+    build: ./services/pagamentos
+    ports:
+      - "5003:5000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/loja_db
+    depends_on:
+      - postgres
+    networks:
+      - loja_net
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: loja_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - loja_net
+    restart: unless-stopped
+
+networks:
+  loja_net:
+    driver: bridge
+
+volumes:
+  postgres_data: {}
