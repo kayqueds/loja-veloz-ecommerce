@@ -4,7 +4,7 @@
 Infraestrutura de e-commerce baseada em microsserviços, focada em alta disponibilidade e escalabilidade. Projetada para suportar picos de tráfego através de orquestração com Kubernetes e automação via CI/CD.
 
 ## Demonstração (Pitch)
-[Clique aqui para assistir à apresentação do projeto](LINK_DO_TEU_VIDEO_AQUI)
+[Clique aqui para assistir à apresentação do projeto](https://www.youtube.com/watch?v=ZbbMly18aIE)
 Comandos principais:
 
 - Rodar local com Docker Compose:
