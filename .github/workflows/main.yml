@@ -1,71 +1,10 @@
-name: CI
+name: Build-Test-Publish
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
-jobs:
-  test:
-    name: Lint and Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Install test deps if present
-        run: |
-          if [ -f services/api-services/requirements.txt ]; then pip install -r services/api-services/requirements.txt; fi
-      - name: Run pytest (if any)
-        run: |
-          set -e
-          if command -v pytest >/dev/null 2>&1; then pytest -q || true; fi
-
-  build-and-push:
-    name: Build and Push Docker images
-    needs: test
-    runs-on: ubuntu-latest
-    env:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push images
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/api-gateway:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/api-services:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/pedidos:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/pagamentos:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/estoque:latest
-          build-args: |
-            GITHUB_SHA=${{ github.sha }}
-          file: |
-            services/api-gateway/Dockerfile
-            services/api-services/Dockerfile
-            services/pedidos/Dockerfile
-            services/pagamentos/Dockerfile
-            services/estoque/Dockerfile
-          context: .
-name: Build-Test-Publish
-
-on:
-  push:
-    branches: [main, master]
 
 jobs:
   test-and-lint:
@@ -79,10 +18,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # Ajuste aqui para instalar dependências de todos os serviços se necessário
           if [ -f services/pedidos/requirements.txt ]; then pip install -r services/pedidos/requirements.txt; fi
-      - name: Run tests (pytest) or lint
+      - name: Run tests
         run: |
-          if command -v pytest >/dev/null 2>&1; then pytest -q || true; else echo "No pytest found, skipping"; fi
+          if command -v pytest >/dev/null 2>&1; then pytest -q || true; else echo "No pytest found"; fi
 
   build-and-push:
     runs-on: ubuntu-latest
@@ -92,14 +32,11 @@ jobs:
         service: [api-gateway, pedidos, estoque, pagamentos]
     steps:
       - uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      - name: Login to registry
+      - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
-          registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push
