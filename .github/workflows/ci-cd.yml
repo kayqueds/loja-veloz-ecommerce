@@ -32,9 +32,9 @@ jobs:
         with:
           context: ./services/${{ matrix.service }}
           push: true
-          tags: ${{ secrets.REGISTRY }}/${{ matrix.service }}:latest
+          tags: ${{ secrets.REGISTRY_USERNAME }}/${{ matrix.service }}:latest
 
       - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ secrets.REGISTRY }}/${{ matrix.service }}:latest
+          image-ref: ${{ secrets.REGISTRY_USERNAME }}/${{ matrix.service }}:latest
