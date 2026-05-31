@@ -14,11 +14,23 @@ spec:
       labels:
         app: estoque
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: estoque
           image: your-registry/estoque:latest
           ports:
             - containerPort: 5000
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          envFrom:
+            - configMapRef:
+                name: loja-config
+            - secretRef:
+                name: loja-secrets
           readinessProbe:
             httpGet:
               path: /health

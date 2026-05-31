@@ -14,9 +14,21 @@ spec:
       labels:
         app: api-gateway
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: api-gateway
           image: your-registry/api-gateway:latest
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          envFrom:
+            - configMapRef:
+                name: loja-config
+            - secretRef:
+                name: loja-secrets
           ports:
             - containerPort: 5000
           readinessProbe:

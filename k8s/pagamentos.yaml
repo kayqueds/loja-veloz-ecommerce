@@ -14,11 +14,23 @@ spec:
       labels:
         app: pagamentos
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
       containers:
         - name: pagamentos
           image: your-registry/pagamentos:latest
           ports:
             - containerPort: 5000
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          envFrom:
+            - configMapRef:
+                name: loja-config
+            - secretRef:
+                name: loja-secrets
           readinessProbe:
             httpGet:
               path: /health
